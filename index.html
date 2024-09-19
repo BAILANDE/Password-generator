@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8"> <!-- 设置文档字符集为UTF-8 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- 适应不同设备的视口设置 -->
+    <title>密码生成器</title> <!-- 页面标题 -->
+    <style>
+        body {
+            font-family: Arial, sans-serif; /* 设置字体 */
+            background-color: #f4f4f4; /* 设置背景色 */
+            margin: 0; /* 清除默认边距 */
+            padding: 20px; /* 设置内边距 */
+        }
+        .container {
+            max-width: 600px; /* 最大宽度 */
+            margin: 0 auto; /* 居中对齐 */
+            background-color: #fff; /* 背景色为白色 */
+            padding: 20px; /* 设置内边距 */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* 添加阴影效果 */
+            border-radius: 8px; /* 圆角边框 */
+        }
+        h1 {
+            text-align: center; /* 标题居中对齐 */
+            color: #333; /* 字体颜色 */
+        }
+        .password-generator {
+            margin-top: 20px; /* 顶部外边距 */
+            text-align: center; /* 内容居中对齐 */
+        }
+        .input-box, .password-box {
+            width: 100%; /* 宽度为100% */
+            margin: 10px 0; /* 上下外边距 */
+            padding: 10px; /* 内边距 */
+            font-size: 16px; /* 字体大小 */
+            border: 1px solid #ddd; /* 边框颜色 */
+            border-radius: 5px; /* 圆角边框 */
+            box-sizing: border-box; /* 包含内边距和边框在内的宽度计算 */
+            word-break: break-all; /* 长单词换行 */
+            max-height: 160px; /* 最大高度 */
+            overflow-y: auto; /* 超出内容显示滚动条 */
+            display: block; /* 块级元素 */
+        }
+        .input-box {
+            text-align: center; /* 文本居中 */
+        }
+        button {
+            padding: 10px 20px; /* 内边距 */
+            font-size: 16px; /* 字体大小 */
+            color: #fff; /* 字体颜色为白色 */
+            background-color: #007bff; /* 按钮背景色 */
+            border: none; /* 无边框 */
+            border-radius: 5px; /* 圆角边框 */
+            cursor: pointer; /* 鼠标悬停时为手形光标 */
+            outline: none; /* 去掉默认轮廓 */
+            margin: 5px; /* 外边距 */
+        }
+        button:hover {
+            background-color: #0056b3; /* 鼠标悬停时改变背景色 */
+        }
+        .options {
+            margin-bottom: 20px; /* 底部外边距 */
+        }
+        .option {
+            margin-right: 10px; /* 右侧外边距 */
+        }
+        .toast {
+            display: none; /* 初始状态隐藏 */
+            position: fixed; /* 固定定位 */
+            bottom: 20px; /* 距离底部20px */
+            left: 50%; /* 居中对齐 */
+            transform: translateX(-50%); /* 水平居中 */
+            padding: 10px 20px; /* 内边距 */
+            background-color: white; /* 背景色为白色 */
+            color: black; /* 字体颜色为黑色 */
+            border: 1px solid #ddd; /* 边框 */
+            border-radius: 5px; /* 圆角边框 */
+            z-index: 1000; /* 提高层级 */
+            transition: opacity 0.5s ease; /* 透明度变化效果 */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>密码生成器</h1> <!-- 标题 -->
+        <div class="password-generator">
+            <input type="text" class="input-box" id="passwordName" placeholder="请输入密码名称"> <!-- 输入密码名称 -->
+            <div class="password-box" id="generatedPassword">点击按钮生成密码</div> <!-- 显示生成的密码 -->
+            <button onclick="generatePassword()">生成密码</button> <!-- 生成密码按钮 -->
+            <button onclick="copyPassword()">复制密码</button> <!-- 复制密码按钮 -->
+        </div>
+        <div class="options">
+            <label for="passwordLength">密码长度:</label> <!-- 密码长度标签 -->
+            <input type="number" id="passwordLength" value="12" min="4" max="50"> <!-- 输入密码长度 -->
+            <label class="option"><input type="checkbox" id="lowercase" checked> 小写字母</label> <!-- 小写字母选项 -->
+            <label class="option"><input type="checkbox" id="uppercase" checked> 大写字母</label> <!-- 大写字母选项 -->
+            <label class="option"><input type="checkbox" id="numbers" checked> 数字</label> <!-- 数字选项 -->
+            <label class="option"><input type="checkbox" id="symbols" checked> 特殊符号</label> <!-- 特殊符号选项 -->
+        </div>
+    </div>
+
+    <div class="toast" id="toast">密码名称和密码已复制到剪贴板</div> <!-- 提示信息 -->
+
+    <script>
+        function generatePassword() {
+            var length = document.getElementById("passwordLength").value; // 获取密码长度
+            var charset = ""; // 初始化字符集
+            var hasLowercase = document.getElementById("lowercase").checked; // 是否包含小写字母
+            var hasUppercase = document.getElementById("uppercase").checked; // 是否包含大写字母
+            var hasNumbers = document.getElementById("numbers").checked; // 是否包含数字
+            var hasSymbols = document.getElementById("symbols").checked; // 是否包含特殊符号
+
+            // 根据用户选择构建字符集
+            if (hasLowercase) charset += "abcdefghijklmnopqrstuvwxyz";
+            if (hasUppercase) charset += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            if (hasNumbers) charset += "0123456789";
+            if (hasSymbols) charset += "!@#$%^&*()_+";
+
+            var retVal = ""; // 初始化生成的密码
+            // 根据密码长度随机选择字符
+            for (var i = 0, n = charset.length; i < length; ++i) {
+                retVal += charset.charAt(Math.floor(Math.random() * n)); // 随机选择字符
+            }
+            
+            document.getElementById("generatedPassword").textContent = retVal; // 显示生成的密码
+        }
+
+        function copyPassword() {
+            var passwordName = document.getElementById("passwordName").value || "未命名密码"; // 获取密码名称
+            var password = document.getElementById("generatedPassword").textContent; // 获取生成的密码
+
+            // 构建Markdown格式内容
+            var markdownContent = `## ${passwordName}\n\`\`\`\n${password}\n\`\`\``;
+
+            // 复制到剪贴板
+            navigator.clipboard.writeText(markdownContent).then(function() {
+                showToast("密码名称和密码已复制到剪贴板"); // 成功提示
+            }, function(err) {
+                showToast("无法复制内容: " + err); // 失败提示
+            });
+        }
+
+        function showToast(message) {
+            var toast = document.getElementById("toast"); // 获取提示框
+            toast.textContent = message; // 设置提示信息
+            toast.style.display = "block"; // 显示提示框
+            toast.style.opacity = 1; // 设置透明度为1
+
+            // 2秒后隐藏提示框
+            setTimeout(function() {
+                toast.style.opacity = 0; // 逐渐隐藏
+                setTimeout(function() {
+                    toast.style.display = "none"; // 最终隐藏
+                }, 500);
+            }, 2000); // 显示2秒
+        }
+    </script>
+</body>
+</html>
