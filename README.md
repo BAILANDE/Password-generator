@@ -1,6 +1,6 @@
 
 
-本网站由AI生成：
+本网站部分由AI生成：
 
 演示网站1 https://password-generator.dingview.top/
 
